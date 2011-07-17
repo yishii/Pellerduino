@@ -65,7 +65,7 @@ public class Target {
 
     }
 
-   File platformsFile = new File(folder,"platforms.txt");
+   File platformsFile = new File(folder,"platform.txt");
    try
    {
     if(platformsFile.exists()){
@@ -74,9 +74,10 @@ public class Target {
        for(Object k : platformPreferences.keySet())
 	{
                String key=(String) k;
-               String platform=key.substring(0,key.indexOf('.'));
+               //String platform=key.substring(0,key.indexOf('.'));
+               String platform=folder.getName();
                if (!platforms.containsKey(platform)) platforms.put(platform, new HashMap());
-          ((Map) platforms.get(platform)).put(key.substring(key.indexOf('.') + 1),platformPreferences.get(key));
+          ((Map) platforms.get(platform)).put(key,platformPreferences.get(key));
         }
       }
     } catch (Exception e) {

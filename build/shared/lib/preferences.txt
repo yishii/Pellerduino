@@ -238,11 +238,11 @@ run.present.exclusive.macosx = true
 
 # ARDUINO PREFERENCES
 board = uno
-target = arduino
+target = avr
 platform = avr
 software=ARDUINO
 
-programmer = arduino:avrispmkii
+programmer = avr:avrispmkii
 
 upload.using = bootloader
 
