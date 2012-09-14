@@ -2195,9 +2195,10 @@ public class Editor extends JFrame implements RunnerListener {
     }
     header.rebuild();
     // Set the title of the window to "sketch_070752a - Processing 0126"
+    // Modified to Pellerduino
     setTitle(
       I18n.format(
-	_("{0} | Arduino {1}"),
+	_("{0} | Pellerduino {1}"),
 	sketch.getName(),
 	Base.VERSION_NAME
       )
