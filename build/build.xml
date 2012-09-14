@@ -205,6 +205,14 @@
       <arg value="macosx/dist/tools-universal.zip" />
     </exec>
 
+    <!-- Extract Propeller tools -->
+    <exec executable="tar">
+      <arg value="jxvf" />
+      <arg value="macosx/dist/propellergcc_v0_3_4-x86_64-macosx.tar.bz2" />
+      <arg value="-C" />
+      <arg value="macosx/work/Arduino.app/Contents/Resources/Java/hardware/tools" />
+    </exec>
+
     <copy todir="macosx/work/Arduino.app/Contents/Resources/Java/hardware/tools/avr/avr/include/avr">    
       <fileset file="macosx/dist/eeprom.h" />
     </copy>
