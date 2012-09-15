@@ -1537,7 +1537,7 @@ public class Base {
   
   static public String getAvrBasePath() {
     String path = getHardwarePath() + File.separator + "tools" +
-                  File.separator + "propeller" + File.separator + "bin" + File.separator;
+                  File.separator + "parallax" + File.separator + "bin" + File.separator;
     if (Base.isLinux() && !(new File(path)).exists()) {
       return "";  // use distribution provided propeller tools if bundled tools missing
     }
@@ -1549,7 +1549,7 @@ public class Base {
   // yishii
   static public String getPropellerBasePath() {
     String path = getHardwarePath() + File.separator + "tools" +
-                  File.separator + "propeller" + File.separator + "bin" + File.separator;
+                  File.separator + "parallax" + File.separator + "bin" + File.separator;
     if (Base.isLinux() && !(new File(path)).exists()) {
       return "";  // use distribution provided propeller tools if bundled tools missing
     }
