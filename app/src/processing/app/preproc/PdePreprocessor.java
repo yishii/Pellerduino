@@ -199,8 +199,10 @@ public class PdePreprocessor {
     int prototypeInsertionPoint = firstStatement(program);
   
     out.print(program.substring(0, prototypeInsertionPoint));
-    out.print("#include \"Arduino.h\"\n");    
-    
+    //out.print("#include \"Arduino.h\"\n");    
+    out.print("#include \"Pellerduino.h\"\n");    // yishii
+    out.print("#include \"P8X32A_QuickStart.h\"\n"); // yishii TODO:ボード別にインクルードファイルを分けるほうが良い。
+
     // print user defined prototypes
     for (int i = 0; i < prototypes.size(); i++) {
       out.print(prototypes.get(i) + "\n");

@@ -59,9 +59,12 @@ public class AvrdudeUploader extends Uploader  {
         programmer = programmer.substring(programmer.indexOf(":") + 1);
       }
       
-      Collection params = getProgrammerCommands(target, programmer);
-      params.add("-Uflash:w:" + buildPath + File.separator + className + ".hex:i");
-      return avrdude(params);
+      //Collection params = getProgrammerCommands(target, programmer);
+      //params.add("-Uflash:w:" + buildPath + File.separator + className + ".hex:i");
+
+      Collection params2 = getProgrammerCommands(target, programmer);
+      params2.add(buildPath + File.separator + className + ".elf");
+      return avrdude(params2);
     }
 
     return uploadViaBootloader(buildPath, className);  
@@ -71,6 +74,7 @@ public class AvrdudeUploader extends Uploader  {
   		throws RunnerException, SerialException {
     Map<String, String> boardPreferences = Base.getBoardPreferences();
     List commandDownloader = new ArrayList();
+    List commandDownloader2 = new ArrayList(); // added. needs refactor for name,maybe. yishii
     String protocol = boardPreferences.get("upload.protocol");
     
     // avrdude wants "stk500v1" to distinguish it from stk500v2
@@ -172,35 +176,29 @@ public class AvrdudeUploader extends Uploader  {
       flushSerialBuffer();
     }
 
-    boolean avrdudeResult = avrdude(commandDownloader);
 
-    // For Leonardo wait until the bootloader serial port disconnects and the sketch serial
-    // port reconnects (or timeout after a few seconds if the sketch port never comes back).
-    // Doing this saves users from accidentally opening Serial Monitor on the soon-to-be-orphaned
-    // bootloader port.
+    commandDownloader2.add(buildPath + File.separator + className + ".elf");
+
+    boolean avrdudeResult = avrdude(commandDownloader2);
+
+	// For Leonardo wait until the bootloader serial port disconnects and the sketch serial
+	// port reconnects (or timeout after a few seconds if the sketch port never comes back).
+	// Doing this saves users from accidentally opening Serial Monitor on the soon-to-be-orphaned
+	// bootloader port.
     if (true == avrdudeResult && boardPreferences.get("bootloader.path") != null && boardPreferences.get("bootloader.path").equals("caterina")) {
-      try {
-        Thread.sleep(500);
-      } catch (InterruptedException ex) { }
-      long timeout = System.currentTimeMillis() + 2000;
-      while (timeout > System.currentTimeMillis()) {
-        List<String> portList = Serial.list();
-        uploadPort = Preferences.get("serial.port");
-        if (portList.contains(uploadPort)) {
-          try {
-            Thread.sleep(100); // delay to avoid port in use and invalid parameters errors
-          } catch (InterruptedException ex) { }
-          // Remove the magic baud rate (1200bps) to avoid future unwanted board resets
-          int serialRate = Preferences.getInteger("serial.debug_rate");
-          if (verbose || Preferences.getBoolean("upload.verbose"))
-            System.out.println("Setting baud rate to " + serialRate + " on " + uploadPort);
-          Serial.touchPort(uploadPort, serialRate);	
-          break;
-        }
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException ex) { }
-      }
+    	try {
+    		Thread.sleep(500);
+    	} catch (InterruptedException ex) { } 
+    	long timeout = System.currentTimeMillis() + 2000;
+    	while (timeout > System.currentTimeMillis()) {
+	    	List<String> portList = Serial.list();
+    		if (portList.contains(Preferences.get("serial.port"))) {
+    			break;
+    		}
+    		try {
+    			Thread.sleep(100);
+    		} catch (InterruptedException ex) { }
+    	}    		
     }
     
     return avrdudeResult;
@@ -298,31 +296,50 @@ public class AvrdudeUploader extends Uploader  {
   
   public boolean avrdude(Collection params) throws RunnerException {
     List commandDownloader = new ArrayList();
-      
-    if(Base.isLinux()) {
-      if ((new File(Base.getHardwarePath() + "/tools/" + "avrdude")).exists()) {
-        commandDownloader.add(Base.getHardwarePath() + "/tools/" + "avrdude");
-        commandDownloader.add("-C" + Base.getHardwarePath() + "/tools/avrdude.conf");
-      } else {
-        commandDownloader.add("avrdude");
+    
+    if(false){
+      if(Base.isLinux()) {
+        if ((new File(Base.getHardwarePath() + "/tools/" + "avrdude")).exists()) {
+          commandDownloader.add(Base.getHardwarePath() + "/tools/" + "avrdude");
+          commandDownloader.add("-C" + Base.getHardwarePath() + "/tools/avrdude.conf");
+        } else {
+          commandDownloader.add("avrdude");
+        }
       }
-    }
-    else {
-      commandDownloader.add(Base.getHardwarePath() + "/tools/avr/bin/" + "avrdude");
-      commandDownloader.add("-C" + Base.getHardwarePath() + "/tools/avr/etc/avrdude.conf");
+      else {
+        commandDownloader.add(Base.getHardwarePath() + "/tools/avr/bin/" + "avrdude");
+        commandDownloader.add("-C" + Base.getHardwarePath() + "/tools/avr/etc/avrdude.conf");
+      }
+      
+      if (verbose || Preferences.getBoolean("upload.verbose")) {
+        commandDownloader.add("-v");
+        commandDownloader.add("-v");
+        commandDownloader.add("-v");
+        commandDownloader.add("-v");
+      } else {
+        commandDownloader.add("-q");
+        commandDownloader.add("-q");
+      }
+      commandDownloader.add("-p" + Base.getBoardPreferences().get("build.mcu"));
+      commandDownloader.addAll(params);
     }
 
-    if (verbose || Preferences.getBoolean("upload.verbose")) {
-      commandDownloader.add("-v");
-      commandDownloader.add("-v");
-      commandDownloader.add("-v");
-      commandDownloader.add("-v");
-    } else {
-      commandDownloader.add("-q");
-      commandDownloader.add("-q");
+    commandDownloader.add(Base.getAvrBasePath() + "propeller-load");
+    //commandDownloader.add("-bhub");
+
+    // yishii
+
+    if(Base.getBoardPreferences().get("upload.target").equals("eeprom")){
+      commandDownloader.add("-e");
     }
-    commandDownloader.add("-p" + Base.getBoardPreferences().get("build.mcu"));
+
     commandDownloader.addAll(params);
+    commandDownloader.add("-p");
+    commandDownloader.add(Preferences.get("serial.port"));
+    commandDownloader.add("-r");
+
+    
+    
 
     return executeUploadCommand(commandDownloader);
   }

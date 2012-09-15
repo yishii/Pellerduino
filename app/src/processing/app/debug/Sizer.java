@@ -44,11 +44,11 @@ public class Sizer implements MessageConsumer {
   public long computeSize() throws RunnerException {
     String avrBasePath = Base.getAvrBasePath();
     String commandSize[] = new String[] {
-      avrBasePath + "avr-size",
+      avrBasePath + "propeller-elf-size",
       " "
-    };
+    }; // yishii
     
-    commandSize[1] = buildPath + File.separator + sketchName + ".hex";
+    commandSize[1] = buildPath + File.separator + sketchName + ".elf";//yishii
 
     int r = 0;
     try {
