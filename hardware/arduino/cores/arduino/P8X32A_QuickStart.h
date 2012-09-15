@@ -2,8 +2,6 @@
   difinitions for Parallax P8X32A QuickStart
 
   Coded by Yasuhiro ISHII 2012
-
-  This software is distributed under Apache2.0 license.
 */
 
 #ifndef __P8X32A_QUICKSTART_H__

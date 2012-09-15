@@ -4,7 +4,6 @@
   09,Sep,2012
   Coded by Yasuhiro ISHII
 
-  This software is distributed under Apache2.0 license.
 */
 
 #include <stdio.h>

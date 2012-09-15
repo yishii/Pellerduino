@@ -3,7 +3,6 @@
 
   Coded by Yasuhiro ISHII 2012
 
-  This software is distributed under Apache2.0 license.
  */
 
 #ifndef __PELLERDUINO_H__
