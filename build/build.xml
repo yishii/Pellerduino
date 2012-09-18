@@ -379,6 +379,13 @@
       <arg value="-xjf"/>
       <arg value="../../avr_tools_linux64.tar.bz2"/>
     </exec>
+
+    <!-- Extract Propeller-gcc -->
+    <exec executable="tar" dir="linux/work/hardware/tools">
+      <arg value="jxvf"/>
+      <arg value="../../../dist/propellergcc_v0_3_4-x86_64-debian-linux.tar.bz2"/>
+    </exec>
+
   </target>
   
   <target name="linux32-run" depends="linux32-build" 
