@@ -77,6 +77,7 @@ public class Compiler implements MessageConsumer {
     String avrBasePath = Base.getAvrBasePath();
     Map<String, String> boardPreferences = Base.getBoardPreferences();
     String core = boardPreferences.get("build.core");
+
     if (core == null) {
     	RunnerException re = new RunnerException(_("No board selected; please choose a board from the Tools > Board menu."));
       re.hideStackTrace();
@@ -177,7 +178,7 @@ public class Compiler implements MessageConsumer {
 
    String runtimeLibraryName = buildPath + File.separator + "core.a";
    List baseCommandAR = new ArrayList(Arrays.asList(new String[] {
-     avrBasePath + "avr-ar",
+     avrBasePath + "propeller-elf-ar",
      "rcs",
      runtimeLibraryName
    }));
@@ -197,10 +198,10 @@ public class Compiler implements MessageConsumer {
     }
    sketch.setCompilingProgress(60);
     List baseCommandLinker = new ArrayList(Arrays.asList(new String[] {
-      avrBasePath + "avr-gcc",
+      avrBasePath + "propeller-elf-gcc",
       "-Os",
-      "-Wl,--gc-sections"+optRelax,
-      "-mmcu=" + boardPreferences.get("build.mcu"),
+      //yishii "-Wl,--gc-sections"+optRelax,
+      "-m" + boardPreferences.get("build.mcu"),//yishii
       "-o",
       buildPath + File.separator + primaryClassName + ".elf"
     }));
@@ -211,12 +212,12 @@ public class Compiler implements MessageConsumer {
 
     baseCommandLinker.add(runtimeLibraryName);
     baseCommandLinker.add("-L" + buildPath);
-    baseCommandLinker.add("-lm");
+    //baseCommandLinker.add("-lm"); // yishii
 
     execAsynchronously(baseCommandLinker);
 
     List baseCommandObjcopy = new ArrayList(Arrays.asList(new String[] {
-      avrBasePath + "avr-objcopy",
+      avrBasePath + "propeller-elf-objcopy",
       "-O",
       "-R",
     }));
@@ -224,27 +225,28 @@ public class Compiler implements MessageConsumer {
     List commandObjcopy;
 
     // 5. extract EEPROM data (from EEMEM directive) to .eep file.
-    sketch.setCompilingProgress(70);
-    commandObjcopy = new ArrayList(baseCommandObjcopy);
-    commandObjcopy.add(2, "ihex");
-    commandObjcopy.set(3, "-j");
-    commandObjcopy.add(".eeprom");
-    commandObjcopy.add("--set-section-flags=.eeprom=alloc,load");
-    commandObjcopy.add("--no-change-warnings");
-    commandObjcopy.add("--change-section-lma");
-    commandObjcopy.add(".eeprom=0");
-    commandObjcopy.add(buildPath + File.separator + primaryClassName + ".elf");
-    commandObjcopy.add(buildPath + File.separator + primaryClassName + ".eep");
-    execAsynchronously(commandObjcopy);
-    
-    // 6. build the .hex file
-    sketch.setCompilingProgress(80);
-    commandObjcopy = new ArrayList(baseCommandObjcopy);
-    commandObjcopy.add(2, "ihex");
-    commandObjcopy.add(".eeprom"); // remove eeprom data
-    commandObjcopy.add(buildPath + File.separator + primaryClassName + ".elf");
-    commandObjcopy.add(buildPath + File.separator + primaryClassName + ".hex");
-    execAsynchronously(commandObjcopy);
+    if(false){ // yishii
+      sketch.setCompilingProgress(70);
+      commandObjcopy = new ArrayList(baseCommandObjcopy);
+      commandObjcopy.add(2, "ihex");
+      commandObjcopy.set(3, "-j");
+      commandObjcopy.add(".eeprom");
+      commandObjcopy.add("--set-section-flags=.eeprom=alloc,load");
+      commandObjcopy.add("--no-change-warnings");
+      commandObjcopy.add("--change-section-lma");
+      commandObjcopy.add(".eeprom=0");
+      commandObjcopy.add(buildPath + File.separator + primaryClassName + ".elf");
+      commandObjcopy.add(buildPath + File.separator + primaryClassName + ".eep");
+      execAsynchronously(commandObjcopy);
+      // 6. build the .hex file
+      sketch.setCompilingProgress(80);
+      commandObjcopy = new ArrayList(baseCommandObjcopy);
+      commandObjcopy.add(2, "ihex");
+      commandObjcopy.add(".eeprom"); // remove eeprom data
+      commandObjcopy.add(buildPath + File.separator + primaryClassName + ".elf");
+      commandObjcopy.add(buildPath + File.separator + primaryClassName + ".hex");
+      execAsynchronously(commandObjcopy);
+    }    
     
     sketch.setCompilingProgress(90);
    
@@ -544,9 +546,9 @@ public class Compiler implements MessageConsumer {
   static private List getCommandCompilerS(String avrBasePath, List includePaths,
     String sourceName, String objectName, Map<String, String> boardPreferences) {
     List baseCommandCompiler = new ArrayList(Arrays.asList(new String[] {
-      avrBasePath + "avr-gcc",
+      avrBasePath + "propeller-elf-gcc",
       "-c", // compile, don't link
-      "-g", // include debugging info (so errors include line numbers)
+      //yishii "-g", // include debugging info (so errors include line numbers)
       "-assembler-with-cpp",
       "-mmcu=" + boardPreferences.get("build.mcu"),
       "-DF_CPU=" + boardPreferences.get("build.f_cpu"),      
@@ -570,16 +572,16 @@ public class Compiler implements MessageConsumer {
     String sourceName, String objectName, Map<String, String> boardPreferences) {
 
     List baseCommandCompiler = new ArrayList(Arrays.asList(new String[] {
-      avrBasePath + "avr-gcc",
+      avrBasePath + "propeller-elf-gcc",
       "-c", // compile, don't link
-      "-g", // include debugging info (so errors include line numbers)
+      //yishii "-g", // include debugging info (so errors include line numbers)
       "-Os", // optimize for size
       Preferences.getBoolean("build.verbose") ? "-Wall" : "-w", // show warnings if verbose
-      "-ffunction-sections", // place each function in its own section
-      "-fdata-sections",
-      "-mmcu=" + boardPreferences.get("build.mcu"),
+      //yishii"-ffunction-sections", // place each function in its own section
+      //yishii"-fdata-sections",
+      "-m" + boardPreferences.get("build.mcu"),//yishii
       "-DF_CPU=" + boardPreferences.get("build.f_cpu"),
-      "-MMD", // output dependancy info
+      //yishii "-MMD", // output dependancy info
       "-DUSB_VID=" + boardPreferences.get("build.vid"),
       "-DUSB_PID=" + boardPreferences.get("build.pid"),
       "-DARDUINO=" + Base.REVISION, 
@@ -602,19 +604,16 @@ public class Compiler implements MessageConsumer {
     Map<String, String> boardPreferences) {
     
     List baseCommandCompilerCPP = new ArrayList(Arrays.asList(new String[] {
-      avrBasePath + "avr-g++",
+      avrBasePath + "propeller-elf-g++",
       "-c", // compile, don't link
-      "-g", // include debugging info (so errors include line numbers)
+      //yishii "-g", // include debugging info (so errors include line numbers)
       "-Os", // optimize for size
       Preferences.getBoolean("build.verbose") ? "-Wall" : "-w", // show warnings if verbose
       "-fno-exceptions",
-      "-ffunction-sections", // place each function in its own section
-      "-fdata-sections",
-      "-mmcu=" + boardPreferences.get("build.mcu"),
-      "-DF_CPU=" + boardPreferences.get("build.f_cpu"),
-      "-MMD", // output dependancy info
-      "-DUSB_VID=" + boardPreferences.get("build.vid"),
-      "-DUSB_PID=" + boardPreferences.get("build.pid"),      
+      //yishii"-ffunction-sections", // place each function in its own section
+      //yishii"-fdata-sections",
+      "-m" + boardPreferences.get("build.mcu"),
+      //yishii "-MMD", // output dependancy info
       "-DARDUINO=" + Base.REVISION,
     }));
 
