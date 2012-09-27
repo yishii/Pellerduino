@@ -1,14 +1,14 @@
 /*
   Pellerduino Core - Arduino-like APIs
 
-  09,Sep,2012
+  27,Sep,2012
   Coded by Yasuhiro ISHII
-
 */
 
 #include <stdio.h>
 #include <propeller.h>
 #include "Pellerduino.h"
+
 
 void pinMode(int pin,int dir)
 {
@@ -37,23 +37,24 @@ int digitalRead(int pin)
     }
 }
 
-void delay(long ms)
+void delay(unsigned long ms)
 {
-    volatile long l;
-    volatile long m;
-
-    // later,need fix it
-    ms *= 10;
-    for(l=0;l<ms;l++){
-	for(m=0;m<180;m++);
-    }
+    unsigned long cycles = ms * 1000 * (_clkfreq/1000000);
+    unsigned long then = _CNT + cycles;
+    while((long)(then - _CNT) > 0);
 }
 
+void delayMicroseconds(unsigned long us)
+{
+    unsigned long cycles = us * (_clkfreq/1000000);
+    unsigned long then = _CNT + cycles;
+    while((long)(then - _CNT) > 0);
+}
 
 int main(void)
 {
     setup();
-    while(1){
+    while(true){
 	loop();
     }
 }
